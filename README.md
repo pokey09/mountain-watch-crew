@@ -71,3 +71,32 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Running a local Taccar (Traccar) server
+
+This project expects a Taccar-compatible tracking server that exposes the Traccar REST API. A lightweight Docker configuration is included to help you spin one up locally.
+
+### 1. Set the required environment variables
+
+Create `.env.local` (ignored by Git) in the project root:
+
+```bash
+VITE_TOMTOM_API_KEY=<tomtom-key>
+VITE_TACCAR_BASE_URL=http://localhost:8082
+VITE_TACCAR_USERNAME=admin
+VITE_TACCAR_PASSWORD=admin
+```
+
+> ⚠️ Change the username/password in production and update this file accordingly.
+
+### 2. Start the Taccar server
+
+```bash
+docker compose -f docker-compose.taccar.yml up -d
+```
+
+The Traccar web UI and REST API will be available at [http://localhost:8082](http://localhost:8082) with the default `admin/admin` credentials. Logs and data are persisted in the Docker volumes declared in `docker-compose.taccar.yml`.
+
+### 3. Add devices / locations
+
+Log into the Traccar UI, create devices for your staff members, and feed positions to port `5055` (or use Traccar's built-in simulator). The front-end will automatically display any live positions retrieved through the REST API.

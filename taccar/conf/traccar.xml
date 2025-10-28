@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
+<properties>
+  <entry key='config.default'>./conf/default.xml</entry>
+
+  <!-- Database: use embedded H2 for easy local setup -->
+  <entry key='database.driver'>org.h2.Driver</entry>
+  <entry key='database.url'>jdbc:h2:/opt/traccar/data/database</entry>
+  <entry key='database.user'>sa</entry>
+  <entry key='database.password'></entry>
+
+  <!-- Networking -->
+  <entry key='server.port'>5055</entry>
+  <entry key='web.port'>8082</entry>
+
+  <!-- Allow requests from the Vite dev server / web UI -->
+  <entry key='web.origin'>*</entry>
+
+  <!-- Optional branding -->
+  <entry key='web.title'>Mountain Watch Crew Tracking</entry>
+
+  <!-- Log level -->
+  <entry key='logger.level'>info</entry>
+</properties>
