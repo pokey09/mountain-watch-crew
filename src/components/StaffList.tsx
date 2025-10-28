@@ -43,7 +43,7 @@ const StaffList = () => {
         <Alert>
           <AlertTitle>Connect to Taccar</AlertTitle>
           <AlertDescription>
-            Provide your Taccar credentials in the map panel to load the live staff roster.
+            Set the VITE_TACCAR_* environment variables and rebuild to load the live staff roster.
           </AlertDescription>
         </Alert>
       </div>
