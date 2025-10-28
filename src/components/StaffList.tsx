@@ -1,50 +1,107 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import StaffCard from "./StaffCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-const mockStaff = [
-  { id: 1, name: "Sarah Chen", role: "patrol" as const, status: "active" as const, location: "North Peak - Chair 3", lastUpdate: "2 min ago" },
-  { id: 2, name: "Mike Johnson", role: "instructor" as const, status: "active" as const, location: "Bunny Hill - Base", lastUpdate: "5 min ago" },
-  { id: 3, name: "Alex Rivera", role: "operations" as const, status: "active" as const, location: "Lift Operations - Main", lastUpdate: "1 min ago" },
-  { id: 4, name: "Jamie Lee", role: "patrol" as const, status: "break" as const, location: "Patrol Base", lastUpdate: "15 min ago" },
-  { id: 5, name: "Taylor Swift", role: "instructor" as const, status: "active" as const, location: "Intermediate - Run 7", lastUpdate: "3 min ago" },
-  { id: 6, name: "Chris Martin", role: "operations" as const, status: "inactive" as const, location: "Off Duty", lastUpdate: "2 hours ago" },
-  { id: 7, name: "Dana White", role: "patrol" as const, status: "active" as const, location: "South Bowl - Peak", lastUpdate: "4 min ago" },
-  { id: 8, name: "Jordan Bell", role: "instructor" as const, status: "active" as const, location: "Advanced - Black Diamond", lastUpdate: "7 min ago" },
-];
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useTaccarStaff } from "@/hooks/useTaccarStaff";
+import { useTaccar } from "@/context/TaccarContext";
 
 const StaffList = () => {
-  const [filter, setFilter] = useState("all");
+  const { config } = useTaccar();
+  const { staff, isLoading, isFetching, isError, error, refetch } = useTaccarStaff();
+  const [filter, setFilter] = useState<string>("all");
 
-  const filteredStaff = filter === "all" 
-    ? mockStaff 
-    : mockStaff.filter(staff => staff.role === filter);
+  const roleFilters = useMemo(() => {
+    const roles = new Set(staff.map((member) => member.role));
+    return ["all", ...Array.from(roles)];
+  }, [staff]);
 
-  const activeCount = mockStaff.filter(s => s.status === "active").length;
+  useEffect(() => {
+    if (!roleFilters.includes(filter)) {
+      setFilter("all");
+    }
+  }, [roleFilters, filter]);
+
+  const filteredStaff = useMemo(() => {
+    if (filter === "all") return staff;
+    return staff.filter((member) => member.role === filter);
+  }, [filter, staff]);
+
+  const activeCount = useMemo(
+    () => staff.filter((member) => member.status === "active").length,
+    [staff]
+  );
+
+  if (!config) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">Staff Directory</h2>
+        </div>
+        <Alert>
+          <AlertTitle>Connect to Taccar</AlertTitle>
+          <AlertDescription>
+            Provide your Taccar credentials in the map panel to load the live staff roster.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Staff Directory</h2>
-        <div className="text-sm text-muted-foreground">
-          {activeCount} of {mockStaff.length} active
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Staff Directory</h2>
+          <p className="text-xs text-muted-foreground">
+            {isFetching ? "Refreshing positions…" : `${activeCount} of ${staff.length} active`}
+          </p>
         </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching || isLoading}>
+          Refresh
+        </Button>
       </div>
 
+      {isError && error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Unable to load staff</AlertTitle>
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      ) : null}
+
       <Tabs value={filter} onValueChange={setFilter} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="patrol">Patrol</TabsTrigger>
-          <TabsTrigger value="instructor">Instructors</TabsTrigger>
-          <TabsTrigger value="operations">Ops</TabsTrigger>
+        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${roleFilters.length}, minmax(0, 1fr))` }}>
+          {roleFilters.map((roleOption) => (
+            <TabsTrigger key={roleOption} value={roleOption}>
+              {roleOption === "all" ? "All" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+            </TabsTrigger>
+          ))}
         </TabsList>
         <TabsContent value={filter} className="mt-4">
           <ScrollArea className="h-[500px] pr-4">
             <div className="space-y-3">
-              {filteredStaff.map(staff => (
-                <StaffCard key={staff.id} {...staff} />
-              ))}
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-32 w-full rounded-lg" />
+                ))
+              ) : filteredStaff.length ? (
+                filteredStaff.map((staffMember) => (
+                  <StaffCard
+                    key={staffMember.id}
+                    name={staffMember.name}
+                    role={staffMember.role}
+                    status={staffMember.status}
+                    location={staffMember.location}
+                    lastUpdate={staffMember.lastUpdate}
+                  />
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground text-center py-10">
+                  No staff match the selected filter.
+                </div>
+              )}
             </div>
           </ScrollArea>
         </TabsContent>
