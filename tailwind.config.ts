@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -46,6 +47,18 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        patrol: {
+          DEFAULT: "hsl(var(--patrol))",
+          foreground: "hsl(var(--patrol-foreground))",
+        },
+        instructor: {
+          DEFAULT: "hsl(var(--instructor))",
+          foreground: "hsl(var(--instructor-foreground))",
+        },
+        operations: {
+          DEFAULT: "hsl(var(--operations))",
+          foreground: "hsl(var(--operations-foreground))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
