@@ -76,20 +76,7 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/c
 
 This project expects a Taccar-compatible tracking server that exposes the Traccar REST API. A lightweight Docker configuration is included to help you spin one up locally.
 
-### 1. Set the required environment variables
-
-Create `.env.local` (ignored by Git) in the project root:
-
-```bash
-VITE_TOMTOM_API_KEY=<tomtom-key>
-VITE_TACCAR_BASE_URL=http://localhost:8082
-VITE_TACCAR_USERNAME=admin
-VITE_TACCAR_PASSWORD=admin
-```
-
-> ⚠️ Change the username/password in production and update this file accordingly.
-
-### 2. Start the Taccar server
+### 1. Start the Taccar server
 
 ```bash
 docker compose -f docker-compose.taccar.yml up -d
@@ -100,3 +87,9 @@ The Traccar web UI and REST API will be available at [http://localhost:8082](htt
 ### 3. Add devices / locations
 
 Log into the Traccar UI, create devices for your staff members, and feed positions to port `5055` (or use Traccar's built-in simulator). The front-end will automatically display any live positions retrieved through the REST API.
+
+### 4. Connect the front-end
+
+Open the Mountain Tracker app and click **Connect server** in the header. Provide your Traccar URL (for example `http://localhost:8082`), username, and password. The connection details are stored locally in the browser so staff locations load automatically on future visits.
+
+> ℹ️ You can still inject credentials at build time with the `VITE_TACCAR_BASE_URL`, `VITE_TACCAR_USERNAME`, and `VITE_TACCAR_PASSWORD` environment variables if you prefer. When those values are present they will be used as the default connection.

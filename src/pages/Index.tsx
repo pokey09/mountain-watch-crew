@@ -1,13 +1,18 @@
+import { useState } from "react";
 import Header from "@/components/Header";
 import MapView from "@/components/MapView";
 import StaffList from "@/components/StaffList";
 import mountainHero from "@/assets/mountain-hero.jpg";
+import TaccarConnectDialog from "@/components/TaccarConnectDialog";
 
 const Index = () => {
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const openConnectDialog = () => setConnectDialogOpen(true);
+
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
+      <Header onConnectClick={openConnectDialog} />
+
       {/* Hero Section */}
       <div className="relative h-48 overflow-hidden">
         <img 
@@ -31,15 +36,17 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Map Section - Takes 2 columns on large screens */}
           <div className="lg:col-span-2">
-            <MapView />
+            <MapView onRequestConnect={openConnectDialog} />
           </div>
 
           {/* Staff List - Takes 1 column */}
           <div className="lg:col-span-1">
-            <StaffList />
+            <StaffList onRequestConnect={openConnectDialog} />
           </div>
         </div>
       </main>
+
+      <TaccarConnectDialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen} />
     </div>
   );
 };

@@ -8,7 +8,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTaccarStaff } from "@/hooks/useTaccarStaff";
 import { useTaccar } from "@/context/TaccarContext";
 
-const StaffList = () => {
+type StaffListProps = {
+  onRequestConnect: () => void;
+};
+
+const StaffList = ({ onRequestConnect }: StaffListProps) => {
   const { config } = useTaccar();
   const { staff, isLoading, isFetching, isError, error, refetch } = useTaccarStaff();
   const [filter, setFilter] = useState<string>("all");
@@ -43,9 +47,10 @@ const StaffList = () => {
         <Alert>
           <AlertTitle>Connect to Taccar</AlertTitle>
           <AlertDescription>
-            Set the VITE_TACCAR_* environment variables and rebuild to load the live staff roster.
+            Provide your Traccar server details to load the live staff roster.
           </AlertDescription>
         </Alert>
+        <Button onClick={onRequestConnect}>Connect server</Button>
       </div>
     );
   }

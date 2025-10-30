@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useMemo } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type TaccarConfig = {
   baseUrl: string;
@@ -8,6 +8,8 @@ export type TaccarConfig = {
 
 type TaccarContextValue = {
   config: TaccarConfig | null;
+  setConfig: (config: TaccarConfig) => void;
+  clearConfig: () => void;
 };
 
 const TaccarContext = createContext<TaccarContextValue | undefined>(undefined);
@@ -25,12 +27,82 @@ const envConfig: TaccarConfig | null =
       }
     : null;
 
+const STORAGE_KEY = 'mountain-watch-crew:taccar-config';
+
+const readStoredConfig = (): TaccarConfig | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<TaccarConfig>;
+    if (
+      typeof parsed?.baseUrl === 'string' &&
+      parsed.baseUrl.length &&
+      typeof parsed?.username === 'string' &&
+      parsed.username.length &&
+      typeof parsed?.password === 'string'
+    ) {
+      return {
+        baseUrl: parsed.baseUrl,
+        username: parsed.username,
+        password: parsed.password,
+      };
+    }
+  } catch {
+    // ignore malformed storage
+  }
+  return null;
+};
+
 export const TaccarProvider = ({ children }: { children: ReactNode }) => {
+  const [config, setConfigState] = useState<TaccarConfig | null>(() => {
+    const stored = readStoredConfig();
+    if (stored) return stored;
+    return envConfig;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const shouldPersist =
+      config &&
+      (!envConfig ||
+        config.baseUrl !== envConfig.baseUrl ||
+        config.username !== envConfig.username ||
+        config.password !== envConfig.password);
+
+    if (shouldPersist && config) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } else {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  }, [config]);
+
+  const setConfig = useCallback((next: TaccarConfig) => {
+    setConfigState({
+      baseUrl: next.baseUrl.trim(),
+      username: next.username.trim(),
+      password: next.password,
+    });
+  }, []);
+
+  const clearConfig = useCallback(() => {
+    if (envConfig) {
+      setConfigState(envConfig);
+    } else {
+      setConfigState(null);
+    }
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+
   const value = useMemo<TaccarContextValue>(
     () => ({
-      config: envConfig,
+      config,
+      setConfig,
+      clearConfig,
     }),
-    []
+    [config, setConfig, clearConfig]
   );
 
   return <TaccarContext.Provider value={value}>{children}</TaccarContext.Provider>;
