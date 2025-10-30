@@ -42,7 +42,6 @@ const fetchFromTaccar = async <T>(config: TaccarConfig, path: string, options?: 
         'Content-Type': 'application/json',
       },
       signal: options?.signal,
-      credentials: 'include',
     });
 
     if (!response.ok) {

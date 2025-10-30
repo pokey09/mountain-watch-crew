@@ -94,4 +94,4 @@ Open the Mountain Tracker app and click **Connect server** in the header. Provid
 
 > ℹ️ You can still inject credentials at build time with the `VITE_TACCAR_BASE_URL`, `VITE_TACCAR_USERNAME`, and `VITE_TACCAR_PASSWORD` environment variables if you prefer. When those values are present they will be used as the default connection.
 
-> ✅ If you host Traccar on a different origin than the web app, make sure the `<entry key='web.origin'>*</entry>` (or a specific origin) line is present in your `traccar.xml`. Without it the browser will block API requests because of CORS.
+> ✅ If you host Traccar on a different origin than the web app, make sure the `<entry key='web.origin'>http://your-app-host:port</entry>` line is present in your `traccar.xml` (you can list multiple origins, separated by commas). Browsers block requests when the origin is missing, so restart Traccar after updating the file.

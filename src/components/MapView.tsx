@@ -128,13 +128,13 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
   const showEmptyState = config && !isLoading && !activeStaff.length;
 
   return (
-    <div className="relative w-full h-full min-h-[600px] rounded-lg overflow-hidden">
+    <div className="relative isolate w-full min-h-[600px] rounded-lg overflow-hidden">
       <MapContainer
         center={initialCenter}
         zoom={12}
         scrollWheelZoom
-        className="h-full w-full rounded-lg shadow-lg"
-        style={{ minHeight: "600px", zIndex: 0 }}
+        className="relative h-full w-full rounded-lg shadow-lg z-0"
+        style={{ minHeight: "600px" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
