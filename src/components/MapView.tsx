@@ -133,7 +133,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
         center={initialCenter}
         zoom={12}
         scrollWheelZoom
-        className="absolute inset-0 rounded-lg shadow-lg"
+        className="h-full w-full rounded-lg shadow-lg"
         style={{ minHeight: "600px" }}
       >
         <TileLayer
