@@ -34,22 +34,31 @@ type FetchOptions = {
 
 const fetchFromTaccar = async <T>(config: TaccarConfig, path: string, options?: FetchOptions): Promise<T> => {
   const url = new URL(path.replace(/^\//, ''), config.baseUrl.endsWith('/') ? config.baseUrl : `${config.baseUrl}/`);
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      Authorization: `Basic ${btoa(`${config.username}:${config.password}`)}`,
-      'Content-Type': 'application/json',
-    },
-    signal: options?.signal,
-    credentials: 'include',
-  });
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${btoa(`${config.username}:${config.password}`)}`,
+        'Content-Type': 'application/json',
+      },
+      signal: options?.signal,
+      credentials: 'include',
+    });
 
-  if (!response.ok) {
-    const message = `Taccar request failed with status ${response.status}`;
-    throw new Error(message);
+    if (!response.ok) {
+      const message = `Taccar request failed with status ${response.status}`;
+      throw new Error(message);
+    }
+
+    return response.json() as Promise<T>;
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        'Unable to reach the Traccar server. Check the URL and ensure CORS is enabled via the web.origin setting.'
+      );
+    }
+    throw error;
   }
-
-  return response.json() as Promise<T>;
 };
 
 export const useTaccarDevices = () => {
