@@ -32,14 +32,63 @@ type FetchOptions = {
   signal?: AbortSignal;
 };
 
+const toBrowserSafeBaseUrl = (rawUrl: string): string => {
+  const trimmed = rawUrl.trim();
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.toString();
+  } catch (error) {
+    throw new Error('The Traccar server URL is invalid. Include the protocol, for example http://localhost:8082.');
+  }
+};
+
+const encodeBasicAuth = (config: TaccarConfig): string => {
+  const credentials = `${config.username}:${config.password}`;
+
+  if (typeof btoa === 'function') {
+    try {
+      return btoa(credentials);
+    } catch {
+      if (typeof TextEncoder !== 'undefined') {
+        const binary = String.fromCharCode(...new TextEncoder().encode(credentials));
+        return btoa(binary);
+      }
+    }
+  }
+
+  const maybeBuffer = (globalThis as unknown as {
+    Buffer?: {
+      from(input: string, encoding: string): { toString(encoding: string): string };
+    };
+  }).Buffer;
+
+  if (maybeBuffer) {
+    return maybeBuffer.from(credentials, 'utf-8').toString('base64');
+  }
+
+  throw new Error('Unable to encode credentials for Traccar authentication in this environment.');
+};
+
 const fetchFromTaccar = async <T>(config: TaccarConfig, path: string, options?: FetchOptions): Promise<T> => {
-  const url = new URL(path.replace(/^\//, ''), config.baseUrl.endsWith('/') ? config.baseUrl : `${config.baseUrl}/`);
+  const normalizedBase = toBrowserSafeBaseUrl(config.baseUrl);
+
+  if (
+    typeof window !== 'undefined' &&
+    window.location?.protocol === 'https:' &&
+    normalizedBase.startsWith('http://')
+  ) {
+    throw new Error(
+      'Browsers block HTTP requests from HTTPS pages. Serve Traccar over HTTPS or open this app over HTTP to continue.'
+    );
+  }
+
+  const url = new URL(path.replace(/^\//, ''), normalizedBase.endsWith('/') ? normalizedBase : `${normalizedBase}/`);
   try {
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        Authorization: `Basic ${btoa(`${config.username}:${config.password}`)}`,
-        'Content-Type': 'application/json',
+        Authorization: `Basic ${encodeBasicAuth(config)}`,
       },
       signal: options?.signal,
     });

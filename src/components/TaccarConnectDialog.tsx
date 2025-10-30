@@ -11,7 +11,7 @@ type TaccarConnectDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-const DEFAULT_BASE_URL = "http://192.168.1.64:8082";
+const DEFAULT_BASE_URL = "http://localhost:8082";
 const DEFAULT_USERNAME = "admin";
 const DEFAULT_PASSWORD = "admin";
 
@@ -41,18 +41,35 @@ const TaccarConnectDialog = ({ open, onOpenChange }: TaccarConnectDialogProps) =
     const trimmedBaseUrl = baseUrl.trim();
     const trimmedUsername = username.trim();
 
-    if (!trimmedBaseUrl) {
-      setValidationError("Enter the URL to your Traccar server.");
-      return;
-    }
-
     if (!trimmedUsername) {
       setValidationError("Username is required.");
       return;
     }
 
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(trimmedBaseUrl);
+    } catch {
+      setValidationError("Enter a full URL including http:// or https://.");
+      return;
+    }
+
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      setValidationError("The Traccar server URL must start with http:// or https://.");
+      return;
+    }
+
+    if (typeof window !== "undefined" && window.location.protocol === "https:" && parsedUrl.protocol === "http:") {
+      setValidationError(
+        "This app is running over HTTPS. Browsers block requests to an HTTP Traccar server. Serve Traccar over HTTPS or access this app over HTTP."
+      );
+      return;
+    }
+
+    const normalizedBaseUrl = parsedUrl.toString().replace(/\/+$/, "");
+
     setConfig({
-      baseUrl: trimmedBaseUrl,
+      baseUrl: normalizedBaseUrl,
       username: trimmedUsername,
       password,
     });

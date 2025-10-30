@@ -148,7 +148,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
           <div className="w-full max-w-lg p-6 space-y-4 bg-card rounded-lg shadow-lg text-center">
             <h3 className="text-lg font-semibold text-foreground">Connect your Traccar server</h3>
             <p className="text-sm text-muted-foreground">
-              Enter the connection details for <span className="font-mono">http://192.168.1.64:8082</span> (or your preferred server) to
+              Enter the connection details for <span className="font-mono">http://localhost:8082</span> (or your preferred server) to
               load live staff locations on the map.
             </p>
             <Button onClick={onRequestConnect} className="mt-2">
