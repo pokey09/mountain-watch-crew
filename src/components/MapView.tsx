@@ -134,7 +134,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
         zoom={12}
         scrollWheelZoom
         className="h-full w-full rounded-lg shadow-lg"
-        style={{ minHeight: "600px" }}
+        style={{ minHeight: "600px", zIndex: 0 }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -144,7 +144,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
       </MapContainer>
 
       {showConfigOverlay && (
-        <Card className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10">
+        <Card className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-[1000]">
           <div className="w-full max-w-lg p-6 space-y-4 bg-card rounded-lg shadow-lg text-center">
             <h3 className="text-lg font-semibold text-foreground">Connect your Traccar server</h3>
             <p className="text-sm text-muted-foreground">
@@ -159,7 +159,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
       )}
 
       {showEmptyState && (
-        <Card className="absolute top-4 left-4 max-w-sm z-20 shadow-lg">
+        <Card className="absolute top-4 left-4 max-w-sm z-[900] shadow-lg">
           <div className="p-4 space-y-2">
             <h4 className="text-sm font-semibold text-foreground">No live positions yet</h4>
             <p className="text-xs text-muted-foreground">
@@ -172,7 +172,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
 
       {!showConfigOverlay && (
         <>
-          <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+          <div className="absolute top-3 right-3 flex items-center gap-2 z-[900]">
             <Button
               variant="secondary"
               size="icon"
@@ -184,7 +184,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
             </Button>
           </div>
 
-          <div className="absolute bottom-4 left-4 z-20">
+          <div className="absolute bottom-4 left-4 z-[900]">
             <Badge variant="secondary">
               {isFetching ? "Updating positions…" : `Tracking ${activeStaff.length} staff`}
             </Badge>
@@ -193,7 +193,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
       )}
 
       {!showConfigOverlay && isError && error ? (
-        <div className="absolute bottom-4 right-4 z-20 max-w-sm">
+        <div className="absolute bottom-4 right-4 z-[900] max-w-sm">
           <Alert variant="destructive">
             <AlertTitle>Failed to load Traccar data</AlertTitle>
             <AlertDescription>{error.message}</AlertDescription>
