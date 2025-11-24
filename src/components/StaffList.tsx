@@ -8,11 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTaccarStaff } from "@/hooks/useTaccarStaff";
 import { useTaccar } from "@/context/TaccarContext";
 
-type StaffListProps = {
-  onRequestConnect: () => void;
-};
-
-const StaffList = ({ onRequestConnect }: StaffListProps) => {
+const StaffList = () => {
   const { config } = useTaccar();
   const { staff, isLoading, isFetching, isError, error, refetch } = useTaccarStaff();
   const [filter, setFilter] = useState<string>("all");
@@ -45,12 +41,11 @@ const StaffList = ({ onRequestConnect }: StaffListProps) => {
           <h2 className="text-lg font-semibold text-foreground">Staff Directory</h2>
         </div>
         <Alert>
-          <AlertTitle>Connect to Taccar</AlertTitle>
+          <AlertTitle>Connecting to Traccar</AlertTitle>
           <AlertDescription>
-            Provide your Traccar server details to load the live staff roster.
+            Attempting to connect to server. Check the Debug panel if issues persist.
           </AlertDescription>
         </Alert>
-        <Button onClick={onRequestConnect}>Connect server</Button>
       </div>
     );
   }

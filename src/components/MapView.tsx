@@ -10,10 +10,6 @@ import { RefreshCcw } from "lucide-react";
 import { useTaccar } from "@/context/TaccarContext";
 import { StaffMember, StaffRole, StaffStatus, useTaccarStaff } from "@/hooks/useTaccarStaff";
 
-type MapViewProps = {
-  onRequestConnect: () => void;
-};
-
 const roleLabels: Record<StaffRole, string> = {
   patrol: "Ski Patrol",
   instructor: "Instructor",
@@ -102,7 +98,7 @@ const StaffMarkers = ({ staff, icons }: { staff: StaffMember[]; icons: Record<st
   );
 };
 
-const MapView = ({ onRequestConnect }: MapViewProps) => {
+const MapView = () => {
   const { config } = useTaccar();
   const { staff, isLoading, isFetching, isError, error, refetch } = useTaccarStaff();
 
@@ -146,14 +142,13 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
       {showConfigOverlay && (
         <Card className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-[1000]">
           <div className="w-full max-w-lg p-6 space-y-4 bg-card rounded-lg shadow-lg text-center">
-            <h3 className="text-lg font-semibold text-foreground">Connect your Traccar server</h3>
+            <h3 className="text-lg font-semibold text-foreground">Connecting to Traccar</h3>
             <p className="text-sm text-muted-foreground">
-              Enter the connection details for <span className="font-mono">http://localhost:8082</span> (or your preferred server) to
-              load live staff locations on the map.
+              Attempting to connect to <span className="font-mono">http://localhost:8082</span>
             </p>
-            <Button onClick={onRequestConnect} className="mt-2">
-              Connect server
-            </Button>
+            <p className="text-xs text-muted-foreground">
+              Make sure Traccar server is running. Check the Debug panel for details.
+            </p>
           </div>
         </Card>
       )}

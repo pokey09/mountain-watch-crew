@@ -1,16 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import MapView from "@/components/MapView";
 import StaffList from "@/components/StaffList";
 import mountainHero from "@/assets/mountain-hero.jpg";
-import TaccarConnectDialog from "@/components/TaccarConnectDialog";
 import { useKioskMode } from "@/hooks/useKioskMode";
 import { DebugPanel } from "@/components/DebugPanel";
 
 const Index = () => {
-  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
-  const openConnectDialog = () => setConnectDialogOpen(true);
-
   // Enable kiosk mode optimizations (screen lock, fullscreen, etc.)
   // Set to true to auto-enable fullscreen on load
   useKioskMode(false);
@@ -28,7 +24,7 @@ const Index = () => {
 
   return (
     <div className="h-screen overflow-hidden bg-background flex flex-col">
-      <Header onConnectClick={openConnectDialog} />
+      <Header />
 
       {/* Hero Section */}
       <div className="relative h-32 flex-shrink-0 overflow-hidden">
@@ -53,17 +49,16 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
           {/* Map Section - Takes 2 columns on large screens */}
           <div className="lg:col-span-2 h-full">
-            <MapView onRequestConnect={openConnectDialog} />
+            <MapView />
           </div>
 
           {/* Staff List - Takes 1 column */}
           <div className="lg:col-span-1 h-full overflow-hidden">
-            <StaffList onRequestConnect={openConnectDialog} />
+            <StaffList />
           </div>
         </div>
       </main>
 
-      <TaccarConnectDialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen} />
       <DebugPanel />
     </div>
   );
