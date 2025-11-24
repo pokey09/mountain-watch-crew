@@ -33,7 +33,7 @@ const statusLabels: Record<StaffStatus, string> = {
 };
 
 // Willard Mountain, Greenwich, NY
-const DEFAULT_CENTER: [number, number] = [43.0886, -73.4540];
+const DEFAULT_CENTER: [number, number] = [43.0207021, -73.5195529];
 
 const createRoleIcon = (color: string): DivIcon =>
   L.divIcon({
