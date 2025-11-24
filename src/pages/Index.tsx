@@ -5,6 +5,7 @@ import StaffList from "@/components/StaffList";
 import mountainHero from "@/assets/mountain-hero.jpg";
 import TaccarConnectDialog from "@/components/TaccarConnectDialog";
 import { useKioskMode } from "@/hooks/useKioskMode";
+import { DebugPanel } from "@/components/DebugPanel";
 
 const Index = () => {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
@@ -63,6 +64,7 @@ const Index = () => {
       </main>
 
       <TaccarConnectDialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen} />
+      <DebugPanel />
     </div>
   );
 };

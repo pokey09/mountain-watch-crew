@@ -14,6 +14,13 @@ type TaccarContextValue = {
 
 const TaccarContext = createContext<TaccarContextValue | undefined>(undefined);
 
+// Hardcoded Traccar server configuration
+const HARDCODED_CONFIG: TaccarConfig = {
+  baseUrl: 'http://localhost:8082',
+  username: 'admin',
+  password: 'admin',
+};
+
 const baseUrl = import.meta.env.VITE_TACCAR_BASE_URL?.trim();
 const username = import.meta.env.VITE_TACCAR_USERNAME?.trim();
 const password = import.meta.env.VITE_TACCAR_PASSWORD ?? '';
@@ -25,7 +32,7 @@ const envConfig: TaccarConfig | null =
         username,
         password,
       }
-    : null;
+    : HARDCODED_CONFIG;
 
 const STORAGE_KEY = 'mountain-watch-crew:taccar-config';
 
@@ -58,7 +65,8 @@ export const TaccarProvider = ({ children }: { children: ReactNode }) => {
   const [config, setConfigState] = useState<TaccarConfig | null>(() => {
     const stored = readStoredConfig();
     if (stored) return stored;
-    return envConfig;
+    // Always fall back to hardcoded config if nothing else is available
+    return envConfig ?? HARDCODED_CONFIG;
   });
 
   useEffect(() => {
@@ -86,11 +94,8 @@ export const TaccarProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const clearConfig = useCallback(() => {
-    if (envConfig) {
-      setConfigState(envConfig);
-    } else {
-      setConfigState(null);
-    }
+    // Always fall back to hardcoded config
+    setConfigState(envConfig ?? HARDCODED_CONFIG);
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem(STORAGE_KEY);
     }
