@@ -1,20 +1,12 @@
-version: '3.9'
-
 services:
-  taccar:
-    image: traccar/traccar:5.13
-    container_name: mountain-watch-taccar
-    restart: unless-stopped
+  traccar:
+    image: traccar/traccar:latest
+    container_name: traccar
+    restart: always
     ports:
-      - "8082:8082"   # Web UI & REST API
-      - "5055:5055"   # Common GPS tracking port (demo/testing)
-    environment:
-      - JAVA_OPTS=-Dconfig.file=/opt/traccar/conf/traccar.xml
+      - "8082:8082"   # Web UI
+      - "5000-5150:5000-5150/udp" # GPS tracker ports
     volumes:
-      - ./taccar/conf/traccar.xml:/opt/traccar/conf/traccar.xml:ro
-      - taccar-data:/opt/traccar/data
-      - taccar-logs:/opt/traccar/logs
-
-volumes:
-  taccar-data:
-  taccar-logs:
+      - ./logs:/opt/traccar/logs
+      - ./data:/opt/traccar/data
+      - ./conf:/opt/traccar/conf
