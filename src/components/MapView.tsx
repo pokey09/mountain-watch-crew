@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap, Circle } from "react-leaflet";
 import L, { DivIcon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import { useTaccar } from "@/context/TaccarContext";
 import { StaffMember, StaffRole, StaffStatus, useTaccarStaff } from "@/hooks/useTaccarStaff";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 const roleLabels: Record<StaffRole, string> = {
   patrol: "Ski Patrol",
@@ -47,6 +48,54 @@ const createRoleIcon = (color: string): DivIcon =>
     iconSize: [18, 18],
     iconAnchor: [9, 9],
     popupAnchor: [0, -10],
+  });
+
+const createUserLocationIcon = (): DivIcon =>
+  L.divIcon({
+    className: "user-location-marker",
+    html: `
+      <div style="position: relative; width: 24px; height: 24px;">
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #3B82F6;
+          border: 3px solid #ffffff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          z-index: 2;
+        "></div>
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: rgba(59, 130, 246, 0.3);
+          animation: pulse 2s ease-out infinite;
+        "></div>
+      </div>
+      <style>
+        @keyframes pulse {
+          0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(2.5);
+            opacity: 0;
+          }
+        }
+      </style>
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
   });
 
 const StaffMarkers = ({ staff, icons }: { staff: StaffMember[]; icons: Record<string, DivIcon> }) => {
@@ -101,6 +150,7 @@ const StaffMarkers = ({ staff, icons }: { staff: StaffMember[]; icons: Record<st
 const MapView = () => {
   const { config } = useTaccar();
   const { staff, isLoading, isFetching, isError, error, refetch } = useTaccarStaff();
+  const { location: userLocation } = useUserLocation();
 
   const activeStaff = useMemo(
     () => staff.filter((member) => member.coordinates),
@@ -116,6 +166,8 @@ const MapView = () => {
     }),
     []
   );
+
+  const userLocationIcon = useMemo(() => createUserLocationIcon(), []);
 
   const initialCenter = activeStaff.length
     ? ([activeStaff[0].coordinates![1], activeStaff[0].coordinates![0]] as [number, number])
@@ -137,6 +189,35 @@ const MapView = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <StaffMarkers staff={activeStaff} icons={roleIcons} />
+
+        {userLocation && (
+          <>
+            <Circle
+              center={[userLocation.latitude, userLocation.longitude]}
+              radius={userLocation.accuracy}
+              pathOptions={{
+                fillColor: "#3B82F6",
+                fillOpacity: 0.1,
+                color: "#3B82F6",
+                weight: 1,
+                opacity: 0.3,
+              }}
+            />
+            <Marker
+              position={[userLocation.latitude, userLocation.longitude]}
+              icon={userLocationIcon}
+            >
+              <Popup>
+                <div className="space-y-1">
+                  <div className="font-semibold text-sm text-foreground">Your Location</div>
+                  <div className="text-xs text-muted-foreground">
+                    Accuracy: ±{Math.round(userLocation.accuracy)}m
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          </>
+        )}
       </MapContainer>
 
       {showConfigOverlay && (
