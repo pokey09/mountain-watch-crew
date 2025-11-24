@@ -132,7 +132,7 @@ const MapView = ({ onRequestConnect }: MapViewProps) => {
     <div className="relative isolate w-full h-full rounded-lg overflow-hidden">
       <MapContainer
         center={initialCenter}
-        zoom={15}
+        zoom={18}
         scrollWheelZoom
         className="relative h-full w-full rounded-lg shadow-lg z-0"
       >
