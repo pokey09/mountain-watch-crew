@@ -6,7 +6,7 @@ Complete guide for deploying Mountain Watch Crew on a Raspberry Pi with your own
 
 - Raspberry Pi (3B+ or later recommended)
 - Raspberry Pi OS (64-bit recommended)
-- Domain name (e.g., `mountainwatch.yourdomain.com`)
+- Domain name (e.g., `tracking.willardskipatrol.net`)
 - Router access for port forwarding (if accessing externally)
 - Basic command line knowledge
 
@@ -96,50 +96,33 @@ npm run build
 
 ## Part 3: Configure Nginx Web Server
 
-### 1. Create Nginx Configuration
+### 1. Create Initial HTTP-Only Nginx Configuration
+
+**IMPORTANT:** Start with HTTP-only config first, then add HTTPS after getting the SSL certificate.
 
 ```bash
 sudo nano /etc/nginx/sites-available/mountain-watch
 ```
 
-Paste this configuration:
+Paste this **initial HTTP-only** configuration:
 
 ```nginx
-# Mountain Watch - HTTP (will redirect to HTTPS)
+# Mountain Watch - HTTP Only (Temporary)
+# This config is used to get the SSL certificate
+# After getting the certificate, we'll update this to add HTTPS
 server {
     listen 80;
     listen [::]:80;
-    server_name mountainwatch.yourdomain.com;
-
-    # Let's Encrypt challenge
-    location /.well-known/acme-challenge/ {
-        root /var/www/mountain-watch/dist;
-    }
-
-    # Redirect to HTTPS
-    location / {
-        return 301 https://$server_name$request_uri;
-    }
-}
-
-# Mountain Watch - HTTPS
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name mountainwatch.yourdomain.com;
-
-    # SSL certificates (will be configured by certbot)
-    ssl_certificate /etc/letsencrypt/live/mountainwatch.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/mountainwatch.yourdomain.com/privkey.pem;
-
-    # SSL configuration
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+    server_name tracking.willardskipatrol.net;
 
     # Root directory
     root /var/www/mountain-watch/dist;
     index index.html;
+
+    # Let's Encrypt challenge (needed for SSL certificate)
+    location /.well-known/acme-challenge/ {
+        root /var/www/mountain-watch/dist;
+    }
 
     # Security headers
     add_header X-Frame-Options "DENY" always;
@@ -226,7 +209,7 @@ Configure your router to forward ports to your Raspberry Pi:
 
 ```bash
 # Get certificate (replace with your domain)
-sudo certbot --nginx -d mountainwatch.yourdomain.com
+sudo certbot --nginx -d tracking.willardskipatrol.net
 
 # Follow the prompts:
 # - Enter your email
@@ -240,6 +223,90 @@ Certbot automatically sets up renewal. Test it:
 
 ```bash
 sudo certbot renew --dry-run
+```
+
+### 3. Update Nginx Config for HTTPS (After Getting Certificate)
+
+After successfully obtaining your SSL certificate, update your nginx config to enable HTTPS:
+
+```bash
+sudo nano /etc/nginx/sites-available/mountain-watch
+```
+
+Replace the entire file with this HTTPS-enabled configuration:
+
+```nginx
+# Mountain Watch - HTTP (redirects to HTTPS)
+server {
+    listen 80;
+    listen [::]:80;
+    server_name tracking.willardskipatrol.net;
+
+    # Let's Encrypt challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/mountain-watch/dist;
+    }
+
+    # Redirect all other HTTP traffic to HTTPS
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
+}
+
+# Mountain Watch - HTTPS
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name tracking.willardskipatrol.net;
+
+    # SSL certificates
+    ssl_certificate /etc/letsencrypt/live/tracking.willardskipatrol.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tracking.willardskipatrol.net/privkey.pem;
+
+    # SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384';
+
+    # Root directory
+    root /var/www/mountain-watch/dist;
+    index index.html;
+
+    # Security headers
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # Serve the app
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Proxy Traccar API requests
+    location /api/ {
+        proxy_pass http://localhost:8082;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Then test and reload nginx:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
 ---
@@ -256,7 +323,7 @@ Update these entries:
 
 ```xml
 <!-- Allow requests from your domain -->
-<entry key='web.origin'>https://mountainwatch.yourdomain.com</entry>
+<entry key='web.origin'>https://tracking.willardskipatrol.net</entry>
 
 <!-- Optional: Change Traccar web interface port if needed -->
 <entry key='web.port'>8082</entry>
@@ -274,7 +341,7 @@ sudo systemctl restart traccar
 
 ### 1. Test Your Deployment
 
-1. **Access your domain:** `https://mountainwatch.yourdomain.com`
+1. **Access your domain:** `https://tracking.willardskipatrol.net`
 2. **Check SSL:** Should show secure padlock in browser
 3. **Test connection:** App should connect to Traccar automatically
 4. **Verify API:** Open browser console, should see no CORS errors
@@ -322,7 +389,7 @@ Add:
 @xset s noblank
 
 # Start Chromium in kiosk mode
-@chromium-browser --kiosk --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state --noerrdialogs https://mountainwatch.yourdomain.com
+@chromium-browser --kiosk --disable-infobars --disable-session-crashed-bubble --disable-restore-session-state --noerrdialogs https://tracking.willardskipatrol.net
 ```
 
 ### 2. Prevent Screen Sleep
@@ -421,8 +488,8 @@ sudo systemctl status traccar
 
 1. **Check DNS propagation:**
    ```bash
-   dig mountainwatch.yourdomain.com
-   nslookup mountainwatch.yourdomain.com
+   dig tracking.willardskipatrol.net
+   nslookup tracking.willardskipatrol.net
    ```
 
 2. **Verify nginx is running:**
