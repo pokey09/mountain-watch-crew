@@ -1,97 +1,246 @@
-# Welcome to your Lovable project
+# Mountain Watch Crew - GPS Staff Tracking
 
-## Project info
+Real-time GPS tracking system for ski mountain staff including ski patrol, instructors, and mountain operations personnel.
 
-**URL**: https://lovable.dev/projects/b76702aa-0b4f-463a-93bb-a6e01827d055
+## Features
 
-## How can I edit this code?
+- 🗺️ **Real-time Map Tracking** - Live staff location visualization using OpenStreetMap and Leaflet
+- 👥 **Staff Directory** - Filterable roster with role-based organization (Patrol, Instructor, Operations)
+- 🔄 **Auto-Refresh** - Automatic position updates every 15 seconds
+- 🖥️ **Kiosk Mode Ready** - Optimized for 24/7 display deployment
+- 📱 **Touch Optimized** - Works on tablets and touchscreens
+- 🔒 **Secure** - Basic authentication with Traccar backend
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: shadcn/ui + Tailwind CSS + Radix UI
+- **Maps**: Leaflet + React Leaflet
+- **State Management**: React Context + TanStack Query
+- **Backend**: Traccar GPS tracking server
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b76702aa-0b4f-463a-93bb-a6e01827d055) and start prompting.
+## Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ and npm
+- Traccar server (see setup below)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd mountain-watch-crew
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b76702aa-0b4f-463a-93bb-a6e01827d055) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
-## Running a local Taccar (Traccar) server
-
-This project expects a Taccar-compatible tracking server that exposes the Traccar REST API. A lightweight Docker configuration is included to help you spin one up locally.
-
-### 1. Start the Taccar server
+### Building for Production
 
 ```bash
+# Build the app
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Running a Traccar Server
+
+This project requires a Traccar-compatible GPS tracking server.
+
+### Option 1: Docker (Development)
+
+```bash
+# Start Traccar server
 docker compose -f docker-compose.taccar.yml up -d
 ```
 
-The Traccar web UI and REST API will be available at [http://localhost:8082](http://localhost:8082) with the default `admin/admin` credentials. Logs and data are persisted in the Docker volumes declared in `docker-compose.taccar.yml`.
+Access at `http://localhost:8082` (default credentials: `admin/admin`)
 
-### 3. Add devices / locations
+### Option 2: Native Installation (Production - Raspberry Pi)
 
-Log into the Traccar UI, create devices for your staff members, and feed positions to port `5055` (or use Traccar's built-in simulator). The front-end will automatically display any live positions retrieved through the REST API.
+See [KIOSK_SETUP.md](KIOSK_SETUP.md) for complete Raspberry Pi deployment instructions.
 
-### 4. Connect the front-end
+```bash
+# Download Traccar for ARM (Raspberry Pi)
+wget https://www.traccar.org/download/traccar-linux-arm.zip
+unzip traccar-linux-arm.zip
+sudo ./traccar.run
 
-Open the Mountain Tracker app and click **Connect server** in the header. Provide your Traccar URL (for example `http://localhost:8082`), username, and password. The connection details are stored locally in the browser so staff locations load automatically on future visits.
+# Start service
+sudo systemctl start traccar
+sudo systemctl enable traccar
+```
 
-> ℹ️ You can still inject credentials at build time with the `VITE_TACCAR_BASE_URL`, `VITE_TACCAR_USERNAME`, and `VITE_TACCAR_PASSWORD` environment variables if you prefer. When those values are present they will be used as the default connection.
+## Configuration
 
-> ✅ If you host Traccar on a different origin than the web app, make sure the `<entry key='web.origin'>http://your-app-host:port</entry>` line is present in your `traccar.xml` (you can list multiple origins, separated by commas). Browsers block requests when the origin is missing, so restart Traccar after updating the file.
+### Environment Variables
+
+Create a `.env.local` file (optional):
+
+```env
+VITE_TACCAR_BASE_URL=http://localhost:8082
+VITE_TACCAR_USERNAME=admin
+VITE_TACCAR_PASSWORD=admin
+```
+
+**Note:** For better security, configure connection details through the in-app dialog instead.
+
+### Traccar Setup
+
+1. Access Traccar UI at `http://localhost:8082`
+2. Login with default credentials: `admin/admin`
+3. **Change the default password immediately**
+4. Create devices for each staff member:
+   - Settings → Devices → Add Device
+   - Set device name to staff member name
+   - Add role attribute: `patrol`, `instructor`, or `operations`
+5. Configure GPS devices to report to port `5055`
+
+### Connecting the App
+
+1. Open the Mountain Watch app
+2. Click **Connect server** in the header
+3. Enter your Traccar server URL (e.g., `http://localhost:8082`)
+4. Provide username and password
+5. Connection details are saved in browser localStorage
+
+## Kiosk Deployment
+
+For 24/7 kiosk deployment on Raspberry Pi, see the comprehensive guide:
+
+📖 **[KIOSK_SETUP.md](KIOSK_SETUP.md)**
+
+Includes:
+- Raspberry Pi OS installation
+- Native Traccar setup
+- Chromium kiosk browser configuration
+- Auto-start on boot
+- Security hardening
+- Remote management
+- Troubleshooting
+
+### Kiosk Features
+
+- ✅ Screen wake lock (prevents sleep)
+- ✅ Disabled text selection
+- ✅ Blocked context menus
+- ✅ Keyboard shortcut blocking
+- ✅ Auto-reload on network reconnection
+- ✅ No scrolling (fixed viewport)
+- ✅ Touch-optimized interface
+
+## Project Structure
+
+```
+mountain-watch-crew/
+├── src/
+│   ├── components/       # React components
+│   │   ├── Header.tsx
+│   │   ├── MapView.tsx
+│   │   ├── StaffList.tsx
+│   │   ├── StaffCard.tsx
+│   │   ├── TaccarConnectDialog.tsx
+│   │   └── ui/          # shadcn UI components
+│   ├── context/         # React context providers
+│   │   └── TaccarContext.tsx
+│   ├── hooks/           # Custom React hooks
+│   │   ├── useTaccarData.ts
+│   │   ├── useTaccarStaff.ts
+│   │   └── useKioskMode.ts
+│   ├── pages/           # Page components
+│   │   ├── Index.tsx
+│   │   └── NotFound.tsx
+│   ├── lib/             # Utilities
+│   └── assets/          # Static assets
+├── taccar/
+│   └── conf/
+│       └── traccar.xml  # Traccar configuration
+├── docker-compose.taccar.yml
+├── KIOSK_SETUP.md       # Raspberry Pi deployment guide
+└── README.md
+```
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### API Integration
+
+The app connects to Traccar's REST API:
+
+- `GET /api/devices` - List all devices (staff members)
+- `GET /api/positions` - Get latest GPS positions
+
+Authentication uses HTTP Basic Auth with base64 encoding.
+
+## CORS Configuration
+
+If hosting Traccar on a different origin, update `traccar.xml`:
+
+```xml
+<entry key='web.origin'>http://your-app-host:port</entry>
+```
+
+Restart Traccar after changes:
+
+```bash
+sudo systemctl restart traccar
+```
+
+## Browser Compatibility
+
+- ✅ Chrome/Chromium (recommended for kiosk)
+- ✅ Firefox
+- ✅ Safari
+- ✅ Edge
+
+**Note:** Wake Lock API requires HTTPS in production (except localhost).
+
+## Troubleshooting
+
+### Connection Issues
+
+- Verify Traccar is running: `sudo systemctl status traccar`
+- Check Traccar is accessible: `curl http://localhost:8082`
+- Verify CORS is configured in `traccar.xml`
+- Check browser console for errors
+
+### No Staff Appearing
+
+- Ensure devices are created in Traccar
+- Verify devices have reported positions
+- Check Traccar API: `http://localhost:8082/api/positions`
+- Use Traccar's built-in simulator for testing
+
+### Map Not Loading
+
+- Check browser console for errors
+- Verify internet connection (for OpenStreetMap tiles)
+- Clear browser cache
+- Check Leaflet CSS is loading
+
+## License
+
+This project is private and proprietary.
+
+## Support
+
+For issues and questions, see [KIOSK_SETUP.md](KIOSK_SETUP.md) troubleshooting section.
+
+---
+
+**Built for Mountain Operations** 🏔️ ⛷️
