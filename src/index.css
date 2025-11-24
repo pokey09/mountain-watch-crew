@@ -133,6 +133,56 @@ All colors MUST be HSL.
   }
 }
 
+/* Kiosk Mode Optimizations */
+@layer base {
+  /* Disable text selection */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Re-enable selection for inputs only */
+  input,
+  textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Disable touch callouts on iOS */
+  * {
+    -webkit-touch-callout: none;
+  }
+
+  /* Prevent pull-to-refresh and overscroll */
+  body {
+    overscroll-behavior: none;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Disable long-press context menu */
+  img {
+    pointer-events: none;
+  }
+
+  /* Keep interactive elements clickable */
+  button,
+  a,
+  input,
+  textarea,
+  [role="button"],
+  .leaflet-container {
+    pointer-events: auto;
+  }
+}
+
 .leaflet-container {
   position: relative;
   z-index: 0;

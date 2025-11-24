@@ -56,8 +56,8 @@ const StaffList = ({ onRequestConnect }: StaffListProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-col h-full space-y-3">
+      <div className="flex items-center justify-between gap-3 flex-shrink-0">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Staff Directory</h2>
           <p className="text-xs text-muted-foreground">
@@ -70,22 +70,22 @@ const StaffList = ({ onRequestConnect }: StaffListProps) => {
       </div>
 
       {isError && error ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="flex-shrink-0">
           <AlertTitle>Unable to load staff</AlertTitle>
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       ) : null}
 
-      <Tabs value={filter} onValueChange={setFilter} className="w-full">
-        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${roleFilters.length}, minmax(0, 1fr))` }}>
+      <Tabs value={filter} onValueChange={setFilter} className="flex flex-col flex-1 overflow-hidden">
+        <TabsList className="grid w-full flex-shrink-0" style={{ gridTemplateColumns: `repeat(${roleFilters.length}, minmax(0, 1fr))` }}>
           {roleFilters.map((roleOption) => (
             <TabsTrigger key={roleOption} value={roleOption}>
               {roleOption === "all" ? "All" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContent value={filter} className="mt-4">
-          <ScrollArea className="h-[500px] pr-4">
+        <TabsContent value={filter} className="flex-1 mt-3 overflow-hidden">
+          <ScrollArea className="h-full pr-4">
             <div className="space-y-3">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, index) => (
